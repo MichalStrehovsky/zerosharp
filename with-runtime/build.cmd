@@ -1,5 +1,14 @@
 @set ILCPATH=%DROPPATH%\tools
 @set SDKPATH=%DROPPATH%\sdk
+@if not exist %ILCPATH%\ilc.exe (
+  echo The DROPPATH environment variable not set. Refer to README.md.
+  exit /B
+)
+@where csc >nul 2>&1
+@if ERRORLEVEL 1 (
+  echo CSC not on the PATH. Refer to README.md.
+  exit /B
+)
 
 @del zerosharp.ilexe >nul 2>&1
 @del zerosharp.obj >nul 2>&1
