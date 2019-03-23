@@ -1,4 +1,4 @@
-# CoreRT demo programs that demonstrate the potential of CoreRT for systems programming
+# C# for systems programming
 
 These samples show how to compile C# to native code using a minimalist .NET runtime ([CoreRT](https://github.com/dotnet/corert)).
 
