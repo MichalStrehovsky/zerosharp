@@ -2,6 +2,8 @@
 
 This sample is a EFI boot application written in C# that displays Hello World. It runs without an OS, on x64 bare metal hardware.
 
+<img src="https://migeel.sk/efisharp.png" >
+
 ## Building the program
 
 Refer to the general instructions at the root of the repo.
