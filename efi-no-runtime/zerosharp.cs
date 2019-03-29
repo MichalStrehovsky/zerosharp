@@ -118,7 +118,7 @@ namespace System.Runtime.InteropServices
 [System.Runtime.InteropServices.McgIntrinsicsAttribute]
 internal class RawCalliHelper
 {
-    public static unsafe void StdCall<T, U>(IntPtr pfn, T* arg1, U* arg2) where T : unmanaged where U : unmanaged
+    public static unsafe void StdCall(IntPtr pfn, byte* arg1, char* arg2)
     {
         // This will be filled in by an IL transform
     }
