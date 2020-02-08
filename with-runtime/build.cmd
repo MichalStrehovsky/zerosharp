@@ -19,5 +19,5 @@
 @if "%1" == "clean" exit /B
 
 csc /debug /noconfig /nostdlib /runtimemetadataversion:v4.0.30319 zerosharp.cs /out:zerosharp.ilexe /langversion:latest /unsafe /r:Test.CoreLib.dll
-"%ILCPATH%\ilc" zerosharp.ilexe -r:Test.CoreLib.dll -o zerosharp.obj --systemmodule Test.CoreLib --map zerosharp.map -O --noscan -g
+"%ILCPATH%\ilc" zerosharp.ilexe -r:Test.CoreLib.dll -o zerosharp.obj --systemmodule:Test.CoreLib --map zerosharp.map -O --noscan -g
 link zerosharp.obj "%SDKPATH%\bootstrapper.lib" "%SDKPATH%\Runtime.lib" kernel32.lib ole32.lib advapi32.lib /incremental:no /debug /opt:ref
