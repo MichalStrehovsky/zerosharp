@@ -17,27 +17,16 @@
     <IncludePal>true</IncludePal>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <IlcSystemModule>efinoruntime</IlcSystemModule>
   </PropertyGroup>
 
   <ItemGroup>
-    <IlcArg Include="--systemmodule:efinoruntime" />
     <LinkerArg Include="/subsystem:EFI_APPLICATION /entry:EfiMain" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-*" />
   </ItemGroup>
-
-  <Target Name="CustomPal10KByte" BeforeTargets="IlcCompile" AfterTargets="ComputeIlcCompileInputs">
-    <ItemGroup>
-      <AutoInitializedAssemblies Remove="System.Private.CoreLib" />
-      <AutoInitializedAssemblies Remove="System.Private.DeveloperExperience.Console" />
-      <AutoInitializedAssemblies Remove="System.Private.TypeLoader" />
-      <AutoInitializedAssemblies Remove="System.Private.DisabledReflection" />
-      <AutoInitializedAssemblies Remove="System.Private.Interop" />
-      <IlcReference Remove="@(IlcReference)" />
-    </ItemGroup>
-  </Target>
 
   <Target Name="CustomizeReferences" BeforeTargets="BeforeCompile" AfterTargets="FindReferenceAssembliesForReferences">
     <ItemGroup>
