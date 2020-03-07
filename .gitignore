@@ -1,0 +1,10 @@
+.vs/
+bin/
+obj/
+*.exe
+*.ilexe
+*.pdb
+*.obj
+*.map
+
+!Test.CoreLib.pdb
