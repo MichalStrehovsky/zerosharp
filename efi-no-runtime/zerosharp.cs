@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace System
 {
-    public class Object { }
+    public class Object { public IntPtr m_pEEType; } // The layout of object is a contract with the compiler.
     public struct Void { }
     public struct Boolean { }
     public struct Char { }
