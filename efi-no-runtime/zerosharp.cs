@@ -120,11 +120,7 @@ unsafe readonly struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL
 {
     private readonly IntPtr _pad;
 
-    private readonly delegate* unmanaged<void*, char*, void*> _outputString;
-    public void OutputString(void* handle, char* str)
-    {
-        _outputString(handle, str);
-    }
+    public readonly delegate* unmanaged<void*, char*, void*> OutputString;
 }
 
 [StructLayout(LayoutKind.Sequential)]
