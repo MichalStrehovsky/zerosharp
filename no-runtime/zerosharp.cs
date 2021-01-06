@@ -1,4 +1,5 @@
 using System;
+using System.Runtime;
 using System.Runtime.InteropServices;
 
 #region A couple very basic things
@@ -68,8 +69,6 @@ namespace System
 
 namespace Internal.Runtime.CompilerHelpers
 {
-    using System.Runtime;
-
     class StartupCodeHelpers
     {
         [RuntimeExport("RhpReversePInvoke2")]
@@ -88,12 +87,13 @@ namespace Internal.Runtime.CompilerHelpers
 
 unsafe class Program
 {
-    [DllImport("api-ms-win-core-processenvironment-l1-1-0")]
+    [DllImport("kernel32")]
     static extern IntPtr GetStdHandle(int nStdHandle);
 
-    [DllImport("api-ms-win-core-console-l1-1-0")]
+    [DllImport("kernel32")]
     static extern IntPtr WriteConsoleW(IntPtr hConsole, void* lpBuffer, int charsToWrite, out int charsWritten, void* reserved);
 
+    [RuntimeExport("wmainCRTStartup")]
     static int Main()
     {
         string hello = "Hello world!";

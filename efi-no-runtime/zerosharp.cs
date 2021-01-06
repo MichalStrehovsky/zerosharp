@@ -40,6 +40,11 @@ namespace System
         {
             public static unsafe int OffsetToStringData => sizeof(IntPtr) + sizeof(int);
         }
+
+        public class RuntimeFeature
+        {
+            public const string UnmanagedSignatureCallingConvention = nameof(UnmanagedSignatureCallingConvention);
+        }
     }
 }
 
@@ -52,11 +57,6 @@ namespace System.Runtime.InteropServices
         public StructLayoutAttribute(LayoutKind layoutKind)
         {
         }
-
-        /*public LayoutKind Value;
-        public int Pack;
-        public int Size;
-        public CharSet CharSet;*/
     }
 
     internal enum LayoutKind
@@ -109,21 +109,6 @@ namespace Internal.Runtime.CompilerHelpers
 }
 #endregion
 
-
-namespace System.Runtime.InteropServices
-{
-    sealed class McgIntrinsicsAttribute : Attribute { }
-}
-
-[System.Runtime.InteropServices.McgIntrinsicsAttribute]
-internal class RawCalliHelper
-{
-    public static unsafe void StdCall<T, U>(IntPtr pfn, T* arg1, U* arg2) where T : unmanaged where U : unmanaged
-    {
-        // This will be filled in by an IL transform
-    }
-}
-
 [StructLayout(LayoutKind.Sequential)]
 struct EFI_HANDLE
 {
@@ -135,11 +120,7 @@ unsafe readonly struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL
 {
     private readonly IntPtr _pad;
 
-    private readonly IntPtr _outputString;
-    public void OutputString(void* handle, char* str)
-    {
-        RawCalliHelper.StdCall(_outputString, (byte*)handle, str);
-    }
+    public readonly delegate* unmanaged<void*, char*, void*> OutputString;
 }
 
 [StructLayout(LayoutKind.Sequential)]
