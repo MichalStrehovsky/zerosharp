@@ -3,10 +3,10 @@ using System.Runtime.InteropServices;
 
 static unsafe class Console
 {
-    [DllImport("api-ms-win-core-processenvironment-l1-1-0")]
+    [DllImport("kernel32")]
     static extern IntPtr GetStdHandle(int nStdHandle);
 
-    [DllImport("api-ms-win-core-console-l1-1-0")]
+    [DllImport("kernel32")]
     static extern IntPtr WriteConsoleW(IntPtr hConsole, void* lpBuffer, int charsToWrite, out int charsWritten, void* reserved);
 
     public static void WriteLine(string s)
