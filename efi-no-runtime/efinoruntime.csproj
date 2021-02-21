@@ -38,9 +38,9 @@
       <ReferencePath Remove="@(ReferencePath)" />
     </ItemGroup>
   </Target>
-  
+
   <PropertyGroup>
-    <IlcBuildTasksPath>$(Pkgruntime_win-x64_microsoft_dotnet_ilcompiler)/tools/ilc.exe</IlcBuildTasksPath>
+    <IlcExePath>$(Pkgruntime_win-x64_microsoft_dotnet_ilcompiler)/tools/ilc.exe</IlcExePath>
     <LinkPath>link</LinkPath>
   </PropertyGroup>
 
@@ -53,7 +53,7 @@
     </CSC>
 
     <Message Text="Now run ilc $(IlcPath)$(ProjectName)" Importance="high"/>
-    <Exec Command="$(IlcBuildTasksPath) $(NativeOutputPath)/$(ProjectName).ilexe -o $(NativeOutputPath)/$(ProjectName).obj --systemmodule $(ProjectName) --map $(NativeOutputPath)/$(ProjectName).map -O" />
+    <Exec Command="$(IlcExePath) $(NativeOutputPath)/$(ProjectName).ilexe -o $(NativeOutputPath)/$(ProjectName).obj --systemmodule $(ProjectName) --map $(NativeOutputPath)/$(ProjectName).map -O" />
 
     <Message Text="run linker" Importance="high"/>
     <!-- This is a hack, to check if the tool 'link' is on the $env:path. -->
