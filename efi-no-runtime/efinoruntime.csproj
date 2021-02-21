@@ -18,14 +18,18 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <IlcSystemModule>efinoruntime</IlcSystemModule>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <LinkerArg Include="/subsystem:EFI_APPLICATION /entry:EfiMain" />
+    <!-- I don't know why but this line is just broken. -->
+    <!-- <LinkerArg Include="/subsystem:EFI_APPLICATION /entry:EfiMain /nologo /incremental:no /out:$(NativeOutputPath)/BOOTX64.EFI" /> -->
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-*" />
+    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="6.0.0-*" GeneratePathProperty="true"/>
+    <!-- This package provides us with a usable IL compiler. I don't know how to use the new package `Microsoft.DotNet.ILCompiler` for a custom build. -->
+    <PackageReference Include="runtime.win-x64.microsoft.dotnet.ilcompiler" Version="6.0.0-*" GeneratePathProperty="true" />
   </ItemGroup>
 
   <Target Name="CustomizeReferences" BeforeTargets="BeforeCompile" AfterTargets="FindReferenceAssembliesForReferences">
@@ -33,6 +37,64 @@
       <ReferencePathWithRefAssemblies Remove="@(ReferencePathWithRefAssemblies)" />
       <ReferencePath Remove="@(ReferencePath)" />
     </ItemGroup>
+  </Target>
+  
+  <PropertyGroup>
+    <IlcBuildTasksPath>$(Pkgruntime_win-x64_microsoft_dotnet_ilcompiler)/tools/ilc.exe</IlcBuildTasksPath>
+    <LinkPath>link</LinkPath>
+  </PropertyGroup>
+
+  <Target Name="CreateBootEfi" AfterTargets="Build">
+    <!-- To avoid stupid errors like path not found -->
+    <MakeDir Directories="$(NativeOutputPath)" />
+
+    <Message Text="Start csc compile." Importance="high"/>
+    <CSC NoLogo="true" NoConfig="true" DebugType="embedded" NoStandardLib="true" Sources="zerosharp.cs" OutputAssembly="$(NativeOutputPath)$(ProjectName).ilexe" LangVersion="latest" AllowUnsafeBlocks="true" RuntimeMetadataVersion="v4.0.3031">
+    </CSC>
+
+    <Message Text="Now run ilc $(IlcPath)$(ProjectName)" Importance="high"/>
+    <Exec Command="$(IlcBuildTasksPath) $(NativeOutputPath)/$(ProjectName).ilexe -o $(NativeOutputPath)/$(ProjectName).obj --systemmodule $(ProjectName) --map $(NativeOutputPath)/$(ProjectName).map -O" />
+
+    <Message Text="run linker" Importance="high"/>
+    <!-- This is a hack, to check if the tool 'link' is on the $env:path. -->
+    <Exec Command="where /Q $(LinkPath) &amp;&amp; where /Q $(LinkPath)" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_WhereLinkPath"/>
+    </Exec>
+    <Error Text="Please make sure you have put the directory C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\xx.xx.xxxxx\bin\Hostx64\x64\ to your environment path after installing the C++ support and a Windows SDK!" Condition="'$(_WhereLinkPath)' != '0'" />
+    <Exec Command="$(LinkPath) /nologo /subsystem:EFI_APPLICATION $(NativeOutputPath)/$(ProjectName).obj /entry:EfiMain /incremental:no /out:$(NativeOutputPath)/BOOTX64.EFI" />
+  </Target>
+
+  <Target Name="GenerateVirtuaDisk" AfterTargets="CreateBootEfi" Condition="'$(Mode)' == 'vhd'">
+    <PropertyGroup>
+      <DriveLetter>Z</DriveLetter>
+      <VHD>$(MSBuildProjectDirectory)\$(NativeOutputPath)$(ProjectName).vhdx</VHD>
+      <CreateVHD>
+        create vdisk file=$(VHD) maximum=40
+        select vdisk file=$(VHD)
+        attach vdisk
+        convert gpt
+        create partition efi
+        format quick fs=fat32 label="System"
+        assign letter="$(DriveLetter)"
+        exit
+      </CreateVHD>
+      <UnMount>
+        select vdisk file=$(VHD)
+        select partition 1
+        remove letter=$(DriveLetter)
+        detach vdisk
+        exit
+      </UnMount>
+    </PropertyGroup>
+    <Message Text="Create VHD" Importance="high"/>
+    <Delete Files="$(VHD)" />
+    <WriteLinesToFile File="$(NativeOutputPath)/createvhd.txt" Overwrite="true" Lines="$(CreateVHD)" />
+
+    <WriteLinesToFile File="$(NativeOutputPath)/unmount.txt" Overwrite="true" Lines="$(UnMount)" />
+    <Exec Command="diskpart /s &quot;$(MSBuildProjectDirectory)\$(NativeOutputPath)/createvhd.txt&quot;" />
+    <Copy SourceFiles="$(NativeOutputPath)/BOOTX64.EFI" DestinationFiles="$(DriveLetter):\EFI\BOOT\BOOTX64.efi" />
+    <Exec Command="diskpart /s &quot;$(MSBuildProjectDirectory)\$(NativeOutputPath)/unmount.txt&quot;" />
+    <Message Text="Your fresh VHD is there: $(VHD)" Importance="high"/>
   </Target>
 
 </Project>
