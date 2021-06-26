@@ -8,7 +8,7 @@ These samples show how to compile C# to native code using the .NET Native AOT te
 
 `efi-no-runtime` is an EFI boot application that lets you run C# on bare metal, without an OS. Similar restrictions to the `no-runtime` sample apply. Making a version of this sample with a runtime would require some porting work on the runtime side.
 
-## Building the samples
+## Building the samples no-runtime and withruntime
 
 There are some prerequisites for running the build scripts:
 * A NativeAOT drop
@@ -18,3 +18,10 @@ You can run these without building NativeAOT yourself. Just point the `DROPPATH`
 
 The `build.cmd` script needs to be executed from a "x64 Native Tools Command Prompt for VS 2019" - it's in your Start menu. Also make sure `DROPPATH` is set as above.
 
+## Building the sample efi-no-runtime
+
+There are some prerequisites for running the build scripts:
+
+* Visual Studio 2019 with C++ support and a Windows SDK
+
+Then you can simply run `dotnet build -c Release -r win-x64` to get an EFI file or `dotnet build -c Release -r win-x64 /p:Mode=vhd` to get a VHDX file.
