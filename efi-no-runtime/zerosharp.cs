@@ -41,7 +41,7 @@ namespace System
             public static unsafe int OffsetToStringData => sizeof(IntPtr) + sizeof(int);
         }
 
-        public class RuntimeFeature
+        public static class RuntimeFeature
         {
             public const string UnmanagedSignatureCallingConvention = nameof(UnmanagedSignatureCallingConvention);
         }
