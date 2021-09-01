@@ -2,37 +2,79 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>9.0</LangVersion>
 
-    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
-    <IlcInvariantGlobalization>true</IlcInvariantGlobalization>
-    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <RuntimeMetadataVersion>v4.0.30319</RuntimeMetadataVersion>
-    <Optimize>true</Optimize>
-    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
-    <IlcDisableReflection>true</IlcDisableReflection>
-    <IncludePal>true</IncludePal>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <DisableImplicitNamespaceImports_DotNet>true</DisableImplicitNamespaceImports_DotNet>
+
     <IlcSystemModule>efinoruntime</IlcSystemModule>
+    <EntryPointSymbol>EfiMain</EntryPointSymbol>
+    <LinkerSubsystem>EFI_APPLICATION</LinkerSubsystem>
   </PropertyGroup>
 
   <ItemGroup>
-    <LinkerArg Include="/subsystem:EFI_APPLICATION /entry:EfiMain" />
+    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="7.0.0-*" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-*" />
-  </ItemGroup>
+  <!--
+    EFI follows the Windows ABI so we would need to pretend we're compiling for Windows. Should be possible
+    with targetos ILC argument, but I don't have bandwidth to test. Plus we need to run linker somehow after.
+  -->
+  <Target Name="ErrorOut" Condition="'$(OS)' != 'Windows_NT'" BeforeTargets="Compile">
+    <Error Text="This sample is only supported on Windows for now, sorry" />
+  </Target>
 
+  <Target Name="BuildVHDX"
+          AfterTargets="CopyNativeBinary"
+          Condition="'$(BuildVHDX)' == 'true'"
+          Inputs="$(PublishDir)$(TargetName).exe"
+          Outputs="$(PublishDir)zerosharp.vhdx">
+    <PropertyGroup>
+      <VHDFilePath>$([System.IO.Path]::GetFullPath('$(PublishDir)'))zerosharp.vhdx</VHDFilePath>
+
+      <AttachVHDLines>
+create vdisk file=$(VHDFilePath) maximum=500
+select vdisk file=$(VHDFilePath)
+attach vdisk
+convert gpt
+create partition efi size=100
+format quick fs=fat32 label="System"
+assign letter=X
+      </AttachVHDLines>
+      <DetachVHDLines>
+select vdisk file=$(VHDFilePath)
+select partition 2
+remove letter=X
+detach vdisk
+      </DetachVHDLines>
+    </PropertyGroup>
+
+    <Delete Files="$(VHDFilePath)" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)attachvhd.txt" Overwrite="true" Lines="$(AttachVHDLines)" />
+    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)\attachvhd.txt&quot;" />
+    <Copy SourceFiles="$(PublishDir)$(TargetName).exe" DestinationFiles="X:\EFI\BOOT\BOOTX64.EFI" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)detachvhd.txt" Overwrite="true" Lines="$(DetachVHDLines)" />
+    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)\detachvhd.txt&quot;" />
+    <Message Text="Created VHDX at $(VHDFilePath)." Importance="High" />
+  </Target>
+
+  <!-- The project file pretends this is .NET, but it's not .NET. Remove all assembly references the .NET SDK added. -->
   <Target Name="CustomizeReferences" BeforeTargets="BeforeCompile" AfterTargets="FindReferenceAssembliesForReferences">
     <ItemGroup>
       <ReferencePathWithRefAssemblies Remove="@(ReferencePathWithRefAssemblies)" />
       <ReferencePath Remove="@(ReferencePath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- The AOT compiler would want to mirror these as AppContext switches. Prevent that. -->
+  <Target Name="RemoveHostConfigurationOptions" BeforeTargets="IlcCompile" DependsOnTargets="PrepareForILLink">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Remove="@(RuntimeHostConfigurationOption)" />
     </ItemGroup>
   </Target>
 
