@@ -114,10 +114,10 @@ namespace Internal.Runtime.CompilerHelpers
         // A couple symbols the generated code will need we park them in this class
         // for no particular reason. These aid in transitioning to/from managed code.
         // Since we don't have a GC, the transition is a no-op.
-        [RuntimeExport("RhpReversePInvoke2")]
-        static void RhpReversePInvoke2(IntPtr frame) { }
-        [RuntimeExport("RhpReversePInvokeReturn2")]
-        static void RhpReversePInvokeReturn2(IntPtr frame) { }
+        [RuntimeExport("RhpReversePInvoke")]
+        static void RhpReversePInvoke(IntPtr frame) { }
+        [RuntimeExport("RhpReversePInvokeReturn")]
+        static void RhpReversePInvokeReturn(IntPtr frame) { }
         [RuntimeExport("RhpPInvoke")]
         static void RhpPInvoke(IntPtr frame) { }
         [RuntimeExport("RhpPInvokeReturn")]
