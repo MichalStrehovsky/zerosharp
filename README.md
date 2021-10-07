@@ -25,6 +25,6 @@ One you made sure you have the prerequisites, enter the appropriate sample direc
 $ dotnet publish -r [RID] -c Release
 ```
 
-Where `[RID]` is the RID you're building for (one of `linux-x64` (Linux with glibc), `linux-musl-x64` (Linux with musl libc), `linux-arm64`, `windows-x64`, `windows-arm64`, `osx-x64`). Cross-building is possible but requires extra steps, so just use the platform you're running on to avoid errors.
+Where `[RID]` is the RID you're building for (one of `linux-x64` (Linux with glibc), `linux-musl-x64` (Linux with musl libc), `linux-arm64`, `win-x64`, `win-arm64`, `osx-x64`). Cross-building is possible but requires extra steps, so just use the platform you're running on to avoid errors.
 
 Some samples also come with a shell script (*.cmd) that pieces together all the tools and avoid MSBuild or dotnet. You need to make sure you have environment set up before running the script. Look at the script for details. The script is redundant with the *.csproj project files.
