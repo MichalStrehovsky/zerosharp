@@ -17,3 +17,12 @@ Running `build.cmd` should produce a BOOTX64.EFI file in the current directory. 
 Running `build.cmd vhd` will produce a VHDX file for you that you can run on Hyper-V directly. You need to create a new Gen 2 virtual machine in Hyper-V and attach the generated disk. Make sure to turn off Secure boot in the virtual machine: the EFI image is not signed.
 
 Similarly, adding `-p:BuildVHDX=true` to the `dotnet publish` line (when using the `*.csproj` project) will produce a bootable VHDX.
+
+### Booting in VirtualBox
+
+To boot it in VirtualBox, we need to get a `vdi` file. First, create the vhdx like explained above (for example, `build.cmd vhd`). Then, you can use VB's built-in tool to convert the `vhdx` file into a `vdi` one:
+```
+VBoxManage.exe clonemedium disk zerosharp.vhdx zerosharp.vdi
+```
+
+Now, go to VirtualBox, create an empty OS, load the `vdi` file as a hard drive, and it should work.
