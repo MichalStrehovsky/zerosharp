@@ -165,6 +165,88 @@ unsafe readonly struct EFI_SYSTEM_TABLE
     public readonly EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* ConOut;
 }
 
+#region Need by new version of ILC
+namespace System 
+{
+    public static partial class AppContext 
+    {
+        public static void SetData(string name, object? data)
+        {
+        }
+    }
+}
+
+namespace System
+{
+    /* By default, attributes are inherited and multiple attributes are not allowed */
+    [AttributeUsage(AttributeTargets.Class, Inherited = true)]
+    public sealed class AttributeUsageAttribute : Attribute
+    {
+        private readonly AttributeTargets _attributeTarget;
+        private bool _allowMultiple;
+        private bool _inherited;
+
+        internal static readonly AttributeUsageAttribute Default = new AttributeUsageAttribute(AttributeTargets.All);
+
+        public AttributeUsageAttribute(AttributeTargets validOn)
+        {
+            _attributeTarget = validOn;
+            _inherited = true;
+        }
+
+        internal AttributeUsageAttribute(AttributeTargets validOn, bool allowMultiple, bool inherited)
+        {
+            _attributeTarget = validOn;
+            _allowMultiple = allowMultiple;
+            _inherited = inherited;
+        }
+
+        public AttributeTargets ValidOn => _attributeTarget;
+
+        public bool AllowMultiple
+        {
+            get => _allowMultiple;
+            set => _allowMultiple = value;
+        }
+
+        public bool Inherited
+        {
+            get => _inherited;
+            set => _inherited = value;
+        }
+    }
+}
+
+namespace System
+{
+    // Enum used to indicate all the elements of the
+    // VOS it is valid to attach this element to.
+
+    public enum AttributeTargets
+    {
+        Assembly = 0x0001,
+        Module = 0x0002,
+        Class = 0x0004,
+        Struct = 0x0008,
+        Enum = 0x0010,
+        Constructor = 0x0020,
+        Method = 0x0040,
+        Property = 0x0080,
+        Field = 0x0100,
+        Event = 0x0200,
+        Interface = 0x0400,
+        Parameter = 0x0800,
+        Delegate = 0x1000,
+        ReturnValue = 0x2000,
+        GenericParameter = 0x4000,
+
+        All = Assembly | Module | Class | Struct | Enum | Constructor |
+                        Method | Property | Field | Event | Interface | Parameter |
+                        Delegate | ReturnValue | GenericParameter
+    }
+}
+#endregion
+
 unsafe class Program
 {
     static void Main() { }
