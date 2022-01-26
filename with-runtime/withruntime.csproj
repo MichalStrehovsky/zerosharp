@@ -10,7 +10,6 @@
     <RuntimeMetadataVersion>v4.0.30319</RuntimeMetadataVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <DisableImplicitNamespaceImports_DotNet>true</DisableImplicitNamespaceImports_DotNet>
 
     <IlcSystemModule>Test.CoreLib</IlcSystemModule>
   </PropertyGroup>
@@ -39,7 +38,7 @@
   </Target>
 
   <!-- The AOT compiler would want to mirror these as AppContext switches. Prevent that. -->
-  <Target Name="RemoveHostConfigurationOptions" BeforeTargets="IlcCompile" DependsOnTargets="PrepareForILLink">
+  <Target Name="RemoveHostConfigurationOptions" BeforeTargets="WriteIlcRspFileForCompilation" DependsOnTargets="PrepareForILLink">
     <ItemGroup>
       <RuntimeHostConfigurationOption Remove="@(RuntimeHostConfigurationOption)" />
     </ItemGroup>
