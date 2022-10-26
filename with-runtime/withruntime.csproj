@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <NoStdLib>true</NoStdLib>
@@ -12,11 +12,11 @@
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 
     <IlcSystemModule>Test.CoreLib</IlcSystemModule>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="7.0.0-*" />
-  </ItemGroup>
+    <PublishAot>true</PublishAot>
+    <!-- Version 11 require System.AttributeUsageAttribute which is additional code -->
+    <LangVersion>10</LangVersion>
+  </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Test.CoreLib">

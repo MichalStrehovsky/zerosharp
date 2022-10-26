@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <NoStdLib>true</NoStdLib>
@@ -14,11 +14,11 @@
     <IlcSystemModule>efinoruntime</IlcSystemModule>
     <EntryPointSymbol>EfiMain</EntryPointSymbol>
     <LinkerSubsystem>EFI_APPLICATION</LinkerSubsystem>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="7.0.0-*" />
-  </ItemGroup>
+    <PublishAot>true</PublishAot>
+    <!-- Version 11 require System.AttributeUsageAttribute which is additional code -->
+    <LangVersion>10</LangVersion>
+  </PropertyGroup>
 
   <!--
     EFI follows the Windows ABI so we would need to pretend we're compiling for Windows. Should be possible
@@ -55,10 +55,10 @@ detach vdisk
 
     <Delete Files="$(VHDFilePath)" />
     <WriteLinesToFile File="$(IntermediateOutputPath)attachvhd.txt" Overwrite="true" Lines="$(AttachVHDLines)" />
-    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)\attachvhd.txt&quot;" />
+    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)attachvhd.txt&quot;" />
     <Copy SourceFiles="$(PublishDir)$(TargetName).exe" DestinationFiles="X:\EFI\BOOT\BOOTX64.EFI" />
     <WriteLinesToFile File="$(IntermediateOutputPath)detachvhd.txt" Overwrite="true" Lines="$(DetachVHDLines)" />
-    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)\detachvhd.txt&quot;" />
+    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)detachvhd.txt&quot;" />
     <Message Text="Created VHDX at $(VHDFilePath)." Importance="High" />
   </Target>
 
