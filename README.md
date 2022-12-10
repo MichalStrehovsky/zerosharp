@@ -4,7 +4,7 @@ These samples show how to compile C# to native code using the .NET Native AOT te
 
 The samples are for people who would like to use C#, but don't want to be bound by the choices of the base class libraries that normally come with C# (in the form that it's bundled in .NET). If you just want to native compile your .NET apps, go to the [NativeAOT](https://github.com/dotnet/runtimelab/tree/feature/NativeAOT) repo/branch instead. Nothing to see for you in this repo.
 
-`no-runtime` is a rather pointless sample that demonstrates how to write code in C# that is directly runnable without a runtime. C# has value types and you can p/invoke into an unmanaged memory allocator, so you can do things with this, but you're so severily limited it's rather pointless. But Hello world ends up being about 4-5 kB native EXE with no dependencies, so that's rather cool.
+`no-runtime` is a rather pointless sample that demonstrates how to write code in C# that is directly runnable without a runtime. C# has value types and you can p/invoke into an unmanaged memory allocator, so you can do things with this, but you're so severily limited it's rather pointless. But Hello world ends up being about 8 kB native EXE with no dependencies, so that's rather cool.
 
 `with-runtime` is something that can be actually useful. This includes the full managed and unmanaged runtime - GC, exception handling, and interface dispatch all work. Test.CoreLib used as the class library here is the same Test.CoreLib that you can find in the NativeAOT repo. Don't look for things like `Object.ToString()` because being compatible with .NET is not the point. This sample comes down to about 400 kB, most of which is the C runtime library.
 
@@ -12,19 +12,17 @@ The samples are for people who would like to use C#, but don't want to be bound 
 
 ## Building the samples
 
-[.NET 6 SDK](https://dotnet.microsoft.com/download) is a prerequisite for building these on all platforms.
+[.NET 7 SDK](https://dotnet.microsoft.com/download) is a prerequisite for building these on all platforms.
 
-In addition to the .NET 6 SDK, these are needed:
-* On Windows: Visual Studio 2019 **with** C++ development support and a Windows SDK
+In addition to the .NET 7 SDK, these are needed:
+* On Windows: Visual Studio 2022 **with** C++ development support and a Windows SDK
 * On Linux: clang
 * On macOS (untested): XCode
 
 One you made sure you have the prerequisites, enter the appropriate sample directory and type:
 
 ```bash
-$ dotnet publish -r [RID] -c Release
+$ dotnet publish -c Release
 ```
-
-Where `[RID]` is the RID you're building for (one of `linux-x64` (Linux with glibc), `linux-musl-x64` (Linux with musl libc), `linux-arm64`, `win-x64`, `win-arm64`, `osx-x64`). Cross-building is possible but requires extra steps, so just use the platform you're running on to avoid errors.
 
 Some samples also come with a shell script (*.cmd) that pieces together all the tools and avoid MSBuild or dotnet. You need to make sure you have environment set up before running the script. Look at the script for details. The script is redundant with the *.csproj project files.
