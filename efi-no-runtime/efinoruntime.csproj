@@ -16,8 +16,6 @@
     <LinkerSubsystem>EFI_APPLICATION</LinkerSubsystem>
 
     <PublishAot>true</PublishAot>
-    <!-- Version 11 require System.AttributeUsageAttribute which is additional code -->
-    <LangVersion>10</LangVersion>
   </PropertyGroup>
 
   <!--

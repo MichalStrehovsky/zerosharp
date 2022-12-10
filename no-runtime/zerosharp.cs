@@ -47,6 +47,20 @@ namespace System
 
     public class Attribute { }
 
+    public enum AttributeTargets { }
+
+    public sealed class AttributeUsageAttribute : Attribute
+    {
+        public AttributeUsageAttribute(AttributeTargets validOn) { }
+        public bool AllowMultiple { get; set; }
+        public bool Inherited { get; set; }
+    }
+
+    public class AppContext
+    {
+        public static void SetData(string s, object o) { }
+    }
+
     namespace Runtime.CompilerServices
     {
         public class RuntimeHelpers
