@@ -34,7 +34,7 @@ namespace System
     public abstract class Enum : ValueType { }
 
     public struct Nullable<T> where T : struct { }
-    
+
     public sealed class String { public readonly int Length; }
     public abstract class Array { }
     public abstract class Delegate { }
