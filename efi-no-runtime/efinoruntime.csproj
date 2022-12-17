@@ -1,78 +1,103 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net7.0</TargetFramework>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <NoStdLib>true</NoStdLib>
-    <NoConfig>true</NoConfig>
-    <RuntimeMetadataVersion>v4.0.30319</RuntimeMetadataVersion>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-
-    <IlcSystemModule>efinoruntime</IlcSystemModule>
-    <EntryPointSymbol>EfiMain</EntryPointSymbol>
-    <LinkerSubsystem>EFI_APPLICATION</LinkerSubsystem>
-
-    <PublishAot>true</PublishAot>
-  </PropertyGroup>
-
-  <!--
+		<NoStdLib>true</NoStdLib>
+		<NoConfig>true</NoConfig>
+		<RuntimeMetadataVersion>v4.0.30319</RuntimeMetadataVersion>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+		<IlcSystemModule>efinoruntime</IlcSystemModule>
+		<EntryPointSymbol>EfiMain</EntryPointSymbol>
+		<LinkerSubsystem>EFI_APPLICATION</LinkerSubsystem>
+		<PublishAot>true</PublishAot>
+		
+		
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<Folder Include="Publish\amd64\" />
+	</ItemGroup>
+	<!--
     EFI follows the Windows ABI so we would need to pretend we're compiling for Windows. Should be possible
     with targetos ILC argument, but I don't have bandwidth to test. Plus we need to run linker somehow after.
   -->
-  <Target Name="ErrorOut" Condition="'$(OS)' != 'Windows_NT'" BeforeTargets="Compile">
-    <Error Text="This sample is only supported on Windows for now, sorry" />
-  </Target>
+	<Target Name="ErrorOut" Condition="'$(OS)' != 'Windows_NT'" BeforeTargets="Compile">
+		<Error Text="This sample is only supported on Windows for now, sorry" />
+	</Target>
 
-  <Target Name="BuildVHDX"
-          AfterTargets="CopyNativeBinary"
-          Condition="'$(BuildVHDX)' == 'true'"
-          Inputs="$(PublishDir)$(TargetName).exe"
-          Outputs="$(PublishDir)zerosharp.vhdx">
-    <PropertyGroup>
-      <VHDFilePath>$([System.IO.Path]::GetFullPath('$(PublishDir)'))zerosharp.vhdx</VHDFilePath>
+	<Target Name="CleanVHDX">
+		<PropertyGroup>
+			<VHDFileFolder>$([System.IO.Path]::GetFullPath('$(PublishDir)'))</VHDFileFolder>
+			<VHDFileName>$(SolutionName).vhdx</VHDFileName>
+			<VHDFilePath>$(VHDFileFolder)$(VHDFileName)</VHDFilePath>
+		</PropertyGroup>
+		<Message Text="Clearing $(VHDFileName)" Importance="high"/>
+		<Exec Command="diskpart /s &quot;$(IntermediateOutputPath)detachvhd.txt&quot;" ContinueOnError="true"/>
+		<Delete Files="$(VHDFilePath)"/>
+	</Target>
+	
+	<Target Name="BuildVHDX" AfterTargets="CopyNativeBinary" Condition="'$(BuildVHDX)' == 'true'" Inputs="$(PublishDir)$(TargetName).exe" Outputs="$(PublishDir)zerosharp.vhdx">
+		<PropertyGroup>
+			<VHDFileFolder>$([System.IO.Path]::GetFullPath('$(PublishDir)'))</VHDFileFolder>
+			<VHDFileName>$(SolutionName).vhdx</VHDFileName>
+			<VHDFilePath>$(VHDFileFolder)$(VHDFileName)</VHDFilePath>
+			<BootFile Condition="'$(RuntimeIdentifier)'=='win-arm'">BOOTARM.EFI</BootFile>
+			<BootFile Condition="'$(RuntimeIdentifier)'=='win-arm64'">BOOTAA64.EFI</BootFile>
+			<BootFile Condition="'$(RuntimeIdentifier)'=='win-x64'">BOOTX64.EFI</BootFile>
+			<BootFile Condition="'$(RuntimeIdentifier)'=='win-x86'">BOOTIA32.EFI</BootFile>
+			<DriveLetter>Z</DriveLetter>
+			<SourceFile>$(PublishDir)$(TargetName).exe</SourceFile>
+			<DestinationFiles>$(DriveLetter):\EFI\BOOT\$(BootFile)</DestinationFiles>
+			<AttachVHDLines>
+				create vdisk file=$(VHDFilePath) maximum=500
+				select vdisk file=$(VHDFilePath)
+				attach vdisk
+				convert gpt
+				create partition efi size=100
+				format quick fs=fat32 label="System"
+				assign letter=$(DriveLetter)
+			</AttachVHDLines>
+			<DetachVHDLines>
+				select vdisk file=$(VHDFilePath)
+				select partition 2
+				remove letter=$(DriveLetter)
+				detach vdisk
+			</DetachVHDLines>
+		</PropertyGroup>
+		<WriteLinesToFile File="$(IntermediateOutputPath)attachvhd.txt" Overwrite="true" Lines="$(AttachVHDLines)" />
+		<WriteLinesToFile File="$(IntermediateOutputPath)detachvhd.txt" Overwrite="true" Lines="$(DetachVHDLines)" />
+		
+		<CallTarget Targets="CleanVHDX" Condition="$([System.IO.File]::Exists('$(VHDFilePath)'))"/>
+		<Message Text="Building VHDX at $(VHDFilePath)." Importance="High" />
+		<Message Text="Creating And Attaching VHD" Importance="High" />
+		<Exec Command="diskpart /s &quot;$(IntermediateOutputPath)attachvhd.txt&quot;" />
+		<Message Text="Created And Attached VHD" Importance="high"/>
+		<Message Text="Copying $([System.IO.Path]::GetFullPath('$(SourceFile)')) to $(DestinationFiles)" Importance="high"/>
+		<Copy SourceFiles="$([System.IO.Path]::GetFullPath('$(SourceFile)'))" DestinationFiles="$(DestinationFiles)" />
+		<Message Text="Detaching VHD" Importance="high"/>
+		<Exec Command="diskpart /s &quot;$(IntermediateOutputPath)detachvhd.txt&quot;" />
+		<Message Text="Detached VHD" Importance="high"/>
+		<Delete Files="$(IntermediateOutputPath)detachvhd.txt"/>
+		<Delete Files="$(IntermediateOutputPath)attachvhd.txt"/>
+		<Message Text="Built VHDX at $(VHDFilePath)." Importance="High" />
+	</Target>
 
-      <AttachVHDLines>
-create vdisk file=$(VHDFilePath) maximum=500
-select vdisk file=$(VHDFilePath)
-attach vdisk
-convert gpt
-create partition efi size=100
-format quick fs=fat32 label="System"
-assign letter=X
-      </AttachVHDLines>
-      <DetachVHDLines>
-select vdisk file=$(VHDFilePath)
-select partition 2
-remove letter=X
-detach vdisk
-      </DetachVHDLines>
-    </PropertyGroup>
+	<!-- The project file pretends this is .NET, but it's not .NET. Remove all assembly references the .NET SDK added. -->
+	<Target Name="CustomizeReferences" BeforeTargets="BeforeCompile" AfterTargets="FindReferenceAssembliesForReferences">
+		<ItemGroup>
+			<ReferencePathWithRefAssemblies Remove="@(ReferencePathWithRefAssemblies)" />
+			<ReferencePath Remove="@(ReferencePath)" />
+		</ItemGroup>
+	</Target>
 
-    <Delete Files="$(VHDFilePath)" />
-    <WriteLinesToFile File="$(IntermediateOutputPath)attachvhd.txt" Overwrite="true" Lines="$(AttachVHDLines)" />
-    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)attachvhd.txt&quot;" />
-    <Copy SourceFiles="$(PublishDir)$(TargetName).exe" DestinationFiles="X:\EFI\BOOT\BOOTX64.EFI" />
-    <WriteLinesToFile File="$(IntermediateOutputPath)detachvhd.txt" Overwrite="true" Lines="$(DetachVHDLines)" />
-    <Exec Command="diskpart /s &quot;$(IntermediateOutputPath)detachvhd.txt&quot;" />
-    <Message Text="Created VHDX at $(VHDFilePath)." Importance="High" />
-  </Target>
-
-  <!-- The project file pretends this is .NET, but it's not .NET. Remove all assembly references the .NET SDK added. -->
-  <Target Name="CustomizeReferences" BeforeTargets="BeforeCompile" AfterTargets="FindReferenceAssembliesForReferences">
-    <ItemGroup>
-      <ReferencePathWithRefAssemblies Remove="@(ReferencePathWithRefAssemblies)" />
-      <ReferencePath Remove="@(ReferencePath)" />
-    </ItemGroup>
-  </Target>
-
-  <!-- The AOT compiler would want to mirror these as AppContext switches. Prevent that. -->
-  <Target Name="RemoveHostConfigurationOptions" BeforeTargets="WriteIlcRspFileForCompilation" DependsOnTargets="PrepareForILLink">
-    <ItemGroup>
-      <RuntimeHostConfigurationOption Remove="@(RuntimeHostConfigurationOption)" />
-    </ItemGroup>
-  </Target>
-
+	<!-- The AOT compiler would want to mirror these as AppContext switches. Prevent that. -->
+	<Target Name="RemoveHostConfigurationOptions" BeforeTargets="WriteIlcRspFileForCompilation" DependsOnTargets="PrepareForILLink">
+		<ItemGroup>
+			<RuntimeHostConfigurationOption Remove="@(RuntimeHostConfigurationOption)" />
+		</ItemGroup>
+	</Target>
 </Project>

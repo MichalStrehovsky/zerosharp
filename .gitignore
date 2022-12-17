@@ -6,5 +6,7 @@ obj/
 *.pdb
 *.obj
 *.map
-
+Publish
+*.vhdx
+*.pubxml.user
 !Test.CoreLib.pdb
