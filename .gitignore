@@ -9,4 +9,5 @@ obj/
 Publish
 *.vhdx
 *.pubxml.user
+*.csproj.user
 !Test.CoreLib.pdb
