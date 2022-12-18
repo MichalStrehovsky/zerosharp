@@ -16,14 +16,11 @@ To create the needed vhdx file we need to publish out project.
 
     | Publish Target | .Net Target | Boot File Name |
     |----------------|-------------|----------------|
-    | X86Debug       | win-x86     |  BOOTIA32.EFI  |
-    | X64Debug       | win-x64     |  BOOTX64.EFI   |
+    | X64Debug    | win-x64     |  BOOTX64.EFI   |
     | ARM64Debug     | win-arm64   |  BOOTAA64.EFI  |
-    | ARMDebug       | win-arm     |  BOOTARM.EFI   |
-    | X86Release     | win-x86     |  BOOTIA32.EFI  |
     | X64Release     | win-x64     |  BOOTX64.EFI   |
     | ARM64Release   | win-arm64   |  BOOTAA64.EFI  |
-    | ARMRelease     | win-arm     |  BOOTARM.EFI   |
+NOTE: x86 And ARM are not supported by the Microsoft.DotNet.ILCompiler package at this time.
 
 - Now Click publish and wait as Visual Studios Builds you the file, To produce the VHDX file
 requires it requires that Visual Studios is running as an administrator.
