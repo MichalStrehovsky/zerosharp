@@ -38,7 +38,7 @@
 
 @if "%1" == "clean" exit /B
 
-csc /nologo /debug:embedded /noconfig /nostdlib /runtimemetadataversion:v4.0.30319 zerosharp.cs /target:win-arm64 /out:zerosharp.ilexe /langversion:latest /unsafe
+csc /nologo /debug:embedded /noconfig /nostdlib /runtimemetadataversion:v4.0.30319 zerosharp.cs /out:zerosharp.ilexe /langversion:latest /unsafe
 %ILCPATH%\ilc zerosharp.ilexe -o zerosharp.obj --systemmodule zerosharp --map zerosharp.map -O
 link /nologo /subsystem:EFI_APPLICATION zerosharp.obj /entry:EfiMain /incremental:no /out:BOOTAA64.EFI
 
