@@ -19,7 +19,7 @@ In addition to the .NET 7 SDK, these are needed:
 * On Linux: clang
 * On macOS (untested): XCode
 
-One you made sure you have the prerequisites, enter the appropriate sample directory and type:
+Once you made sure you have the prerequisites, enter the appropriate sample directory and type:
 
 ```bash
 $ dotnet publish -c Release
